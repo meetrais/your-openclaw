@@ -144,6 +144,10 @@ ENV/
 env.bak/
 venv.bak/
 
+# Your OpenClaw config (API keys, credentials)
+.youropenclaw/
+config.json
+
 # Spyder project settings
 .spyderproject
 .spyproject
