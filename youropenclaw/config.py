@@ -9,13 +9,17 @@ PROVIDERS = {
     "1": "openai",
     "2": "anthropic",
     "3": "google",
+    "4": "ollama",
 }
 
 DEFAULT_MODELS = {
     "openai": "gpt-4o-mini",
     "anthropic": "claude-sonnet-4-20250514",
     "google": "gemini-2.0-flash",
+    "ollama": "llama3.2",
 }
+
+LOCAL_PROVIDERS = {"ollama"}
 
 
 def load_config():
@@ -24,9 +28,9 @@ def load_config():
     try:
         data = json.loads(CONFIG_FILE.read_text())
         provider = data.get("provider")
-        api_key = data.get("api_key")
+        api_key = data.get("api_key", "")
         model = data.get("model")
-        if provider and api_key and model:
+        if provider and model and (api_key or provider in LOCAL_PROVIDERS):
             return {"provider": provider, "api_key": api_key, "model": model}
     except (json.JSONDecodeError, OSError):
         pass
@@ -53,14 +57,15 @@ def run_setup(force=False):
     print("  1. OpenAI")
     print("  2. Anthropic")
     print("  3. Google Gemini")
+    print("  4. Ollama (local)")
 
     if current_provider:
         reverse_map = {v: k for k, v in PROVIDERS.items()}
         current_choice = reverse_map.get(current_provider, "")
-        prompt = f"\nEnter choice (1/2/3) [{current_provider}]: "
+        prompt = f"\nEnter choice (1/2/3/4) [{current_provider}]: "
     else:
         current_choice = ""
-        prompt = "\nEnter choice (1/2/3): "
+        prompt = "\nEnter choice (1/2/3/4): "
 
     choice = ""
     while True:
@@ -72,11 +77,17 @@ def run_setup(force=False):
 
     provider = PROVIDERS[choice]
 
-    default_model = current_model if current_model else DEFAULT_MODELS[provider]
+    if provider == current_provider and current_model:
+        default_model = current_model
+    else:
+        default_model = DEFAULT_MODELS.get(provider, "")
     model_input = input(f"Enter model name [{default_model}]: ").strip()
     model = model_input if model_input else default_model
 
-    if current_api_key:
+    if provider in LOCAL_PROVIDERS:
+        api_key = "ollama"
+        print("(No API key needed for local provider)")
+    elif current_api_key and current_api_key != "ollama":
         masked = current_api_key[:4] + "****" + current_api_key[-4:]
         api_key_input = input(f"Enter API key [{masked}]: ").strip()
         api_key = api_key_input if api_key_input else current_api_key

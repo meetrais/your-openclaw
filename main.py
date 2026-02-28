@@ -73,6 +73,10 @@ def main():
             print(f"\nUsing: {config['provider']} / {config['model']}")
         start_agent(config)
     elif choice == "2":
+        config = load_config()
+        if not config:
+            print("\nNo LLM settings found. Please configure first.\n")
+            run_setup(force=True)
         start_web()
     else:
         config = run_setup(force=True)

@@ -97,17 +97,23 @@ def render_sidebar():
             st.warning("Not configured yet.")
 
         with st.expander("Change Configuration", expanded=not bool(config)):
-            provider_names = {"openai": "OpenAI", "anthropic": "Anthropic", "google": "Google Gemini"}
+            provider_names = {"openai": "OpenAI", "anthropic": "Anthropic", "google": "Google Gemini", "ollama": "Ollama (local)"}
             provider_list = list(provider_names.keys())
             current_idx = provider_list.index(config["provider"]) if config and config["provider"] in provider_list else 0
 
             provider = st.selectbox("Provider", provider_list, index=current_idx, format_func=lambda x: provider_names[x])
             model = st.text_input("Model", value=config["model"] if config else DEFAULT_MODELS.get(provider, ""))
-            api_key = st.text_input("API Key", value=config["api_key"] if config else "", type="password")
+
+            local_providers = {"ollama"}
+            if provider in local_providers:
+                api_key = "ollama"
+                st.caption("No API key needed for local provider.")
+            else:
+                api_key = st.text_input("API Key", value=config["api_key"] if config and config.get("api_key", "") != "ollama" else "", type="password")
 
             if st.button("Save Configuration", use_container_width=True):
-                if provider and model and api_key:
-                    save_config(provider, api_key, model)
+                if provider and model and (api_key or provider in local_providers):
+                    save_config(provider, api_key or "ollama", model)
                     st.success("Configuration saved!")
                     st.rerun()
                 else:
