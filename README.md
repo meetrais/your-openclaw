@@ -1,5 +1,9 @@
 # Your OpenClaw
 
+[![Your OpenClaw Agent](https://img.shields.io/badge/🦞_Your_OpenClaw-Agent-blueviolet)](https://github.com/meetrais/your-openclaw)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://github.com/meetrais/your-openclaw/blob/main/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/meetrais/your-openclaw/pulls)
+
 A personal AI assistant inspired by the [OpenClaw](https://github.com/openclaw/openclaw) project. It uses a ReAct (Reason + Act) loop to autonomously call tools, answer questions, and run automated tasks via a heartbeat system. Supports multiple LLM providers including local models through Ollama.
 
 ## Supported Providers
