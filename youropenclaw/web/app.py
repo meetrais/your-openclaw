@@ -204,21 +204,31 @@ def render_heartbeat_sidebar():
                 st.text(log)
 
 
+def ensure_agent():
+    config = load_config()
+    if not config:
+        return None
+
+    if "agent" not in st.session_state or st.session_state.agent is None:
+        with st.spinner("Initializing agent..."):
+            _, agent = init_agent()
+            st.session_state.agent = agent
+            st.session_state.config_snapshot = config
+
+    if st.session_state.get("config_snapshot") != config:
+        with st.spinner("Reinitializing agent..."):
+            _, agent = init_agent()
+            st.session_state.agent = agent
+            st.session_state.config_snapshot = config
+
+    return st.session_state.agent
+
+
 def render_chat():
     config = load_config()
     if not config:
         st.info("👈 Please configure your LLM settings in the sidebar to start chatting.")
         return
-
-    if "agent" not in st.session_state or st.session_state.agent is None:
-        _, agent = init_agent()
-        st.session_state.agent = agent
-        st.session_state.config_snapshot = config
-
-    if st.session_state.get("config_snapshot") != config:
-        _, agent = init_agent()
-        st.session_state.agent = agent
-        st.session_state.config_snapshot = config
 
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -232,6 +242,11 @@ def render_chat():
         with st.chat_message("user"):
             st.markdown(prompt)
 
+        agent = ensure_agent()
+        if not agent:
+            st.error("Failed to initialize agent. Check your configuration.")
+            return
+
         with st.chat_message("assistant"):
             status_container = st.status("Thinking...", expanded=True)
 
@@ -240,7 +255,7 @@ def render_chat():
                 status_container.write(msg)
 
             try:
-                response = st.session_state.agent.run(prompt, status_callback=update_status)
+                response = agent.run(prompt, status_callback=update_status)
             except Exception as e:
                 response = f"Error: {e}"
 
